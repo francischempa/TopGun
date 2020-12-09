@@ -45,6 +45,7 @@ object FileWriter {
         ("packageName", (site: CallSite) => site.packageName),
         ("className", (site: CallSite) => site.className),
         ("methodName", (site: CallSite) => site.methodName),
+        ("isnativesample", (site: CallSite) => site.isNative),
         ("desc", (site: CallSite) => site.desc),
         ("line", (site: CallSite) => site.line),
         ("toStackTrace", (site: CallSite) => site.toStackTrace),

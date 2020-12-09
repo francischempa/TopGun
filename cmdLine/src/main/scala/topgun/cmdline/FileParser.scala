@@ -26,9 +26,10 @@ class FileParser(file: File, cmdLine: JfrParseCommandLine, totals: Totals, confi
       while (recordingFile.hasMoreEvents){
         val event = recordingFile.readEvent()
         event.getEventType.getLabel match {
-          case "Allocation in new TLAB" => allocationInNewTlab=true; allocation(event, true)
-          case "Allocation outside TLAB" => allocationOutsideTlab=true; allocation(event, false)
+          case "Allocation in new TLAB" => allocationInNewTlab=true; allocation(event, isTLAB = true)
+          case "Allocation outside TLAB" => allocationOutsideTlab=true; allocation(event, isTLAB = false)
           case "Method Profiling Sample" => methodProfilingSample=true; cpu(event)
+          case "Method Profiling Sample Native" => cpu(event)
           case e =>
             totals.ignoreEvent(e)
 
@@ -57,15 +58,15 @@ class FileParser(file: File, cmdLine: JfrParseCommandLine, totals: Totals, confi
       }
     }
 
-    try{
-      foundRequiredEvents()
-    }catch {
-      case e: JfrEventNotFoundException => e.printStackTrace(); System.exit(-1)
-    }
+//    try{
+//      foundRequiredEvents()
+//    }catch {
+//      case e: JfrEventNotFoundException => e.printStackTrace(); System.exit(-1)
+//    }
   }
 
   def addDerated(frames: Seq[CallSite], value: Long)
-                (fn: (CallSite, Double) => Unit) = {
+                (fn: (CallSite, Double) => Unit): Double = {
     val step = 1.0D / frames.size
     frames.foldLeft(1.0) {
       case (remaining, (site)) =>
@@ -154,13 +155,25 @@ class FileParser(file: File, cmdLine: JfrParseCommandLine, totals: Totals, confi
 
   private def readFrames(event: RecordedEvent): List[CallSite] = {
     val stack = event.getStackTrace
-
+    val isNative = if(event.getEventType.getLabel=="Method Profiling Sample Native") true else false
     if (stack eq null) List() else {
       stack.getFrames.iterator.asScala.map {
         frame: RecordedFrame =>
           val method = frame.getMethod
-          CallSite(method.getType.getName, method.getName, method.getName, method.getDescriptor, frame.getLineNumber)
-      }.distinct.takeWhile { f => !f.isIgnorableTopFrame }.toList
+          if(method ne null) {
+            CallSite(
+              method.getType.getName.replaceFirst("[.][^.]*$",""),
+              method.getType.getName.substring(method.getType.getName.lastIndexOf('.')+1),
+              method.getName,
+              isNative,
+              method.getDescriptor,
+              frame.getLineNumber
+            )
+          } else {
+            CallSite("NoMethodInFrame_", "NoMethodInFrame_", "NoMethodInFrame_", isNative, "NoMethodInFrame_", -1)
+          }
+      }.filter(_ ne null)
+      .distinct.takeWhile { f => !f.isIgnorableTopFrame }.toList
     }
   }
 }

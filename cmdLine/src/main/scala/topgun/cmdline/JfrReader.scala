@@ -32,7 +32,7 @@ class JfrReader(cmdLine: JfrParseCommandLine) {
     val callSitesList: List[CallSite] = CallSite.allSites.toList
     println("writing files")
     FileWriter.writeFile(cmdLine.outDir, "allocations", callSitesList.filter(_.userDeratedAllocatedBytes.get > 0).sortBy(_.userDeratedAllocatedBytes.get))
-    FileWriter.writeFile(cmdLine.outDir, "CPU", callSitesList.filter(_.userDeratedCpu.get > 0).sortBy(_.userDeratedCpu.get))
+    FileWriter.writeFile(cmdLine.outDir, "CPU", callSitesList.filter(site=>site.userDeratedCpu.get > 0||site.isNative).sortBy(_.userDeratedCpu.get))
     FileWriter.writeFile(cmdLine.outDir, "ALL", callSitesList.sortBy(_.FQN))
 
     FileWriter.writeAllocationSummary(cmdLine.outDir, "alloc-by-class", totals.allAllocations.toList.sortBy(_._2.totalExpandedAllocation.get))

@@ -22,12 +22,12 @@ object CallSite {
   private val IGNORABLE_TOP_FRAME = 2
 
   private val all = new mutable.HashMap[CallSite, CallSite]()
-  def apply(packageName: String, className: String, methodName: String, desc: String, line: Int): CallSite = {
-    val site = new CallSite(packageName.intern, className.intern, methodName.intern, desc.intern, line)
+  def apply(packageName: String, className: String, methodName: String, isNative: Boolean, desc: String, line: Int): CallSite = {
+    val site = new CallSite(packageName.intern, className.intern, methodName.intern, isNative, desc.intern, line)
     all.getOrElseUpdate(site, site)
   }
 }
-class CallSite private(val packageName:String, val className: String, val methodName:String, val desc: String, val line:Int) extends CallSiteInfo {
+class CallSite private(val packageName:String, val className: String, val methodName:String, val isNative: Boolean, val desc: String, val line:Int) extends CallSiteInfo {
 
   val FQN = s"$packageName.$className.$methodName$desc:$line"
   override def toString = FQN
