@@ -34,16 +34,9 @@ class Totals {
   def ignoredSummary: List[(String, Long)] = _ignoredEvents.map{ case (k,v) => (k, v.get())}.toList.sortBy(_._1)
   var totalEvents= new AtomicLong
   var ignoredEvents= new AtomicLong
-
   var consumedCpuEvents= new AtomicLong
-  var consumedCpuEventsNative= new AtomicLong
-
   var ignoredThreadCpuEvents= new AtomicLong
-  var ignoredThreadCpuEventsNative= new AtomicLong
-
   var ignoredStackCpuEvents= new AtomicLong
-  var ignoredStackCpuEventsNative= new AtomicLong
-
   var consumedAllocationEvents= new AtomicLong
   var ignoredThreadAllocationEvents= new AtomicLong
   var ignoredStackAllocationEvents= new AtomicLong

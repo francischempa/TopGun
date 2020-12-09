@@ -58,11 +58,11 @@ class FileParser(file: File, cmdLine: JfrParseCommandLine, totals: Totals, confi
       }
     }
 
-//    try{
-//      foundRequiredEvents()
-//    }catch {
-//      case e: JfrEventNotFoundException => e.printStackTrace(); System.exit(-1)
-//    }
+    try{
+      foundRequiredEvents()
+    }catch {
+      case e: JfrEventNotFoundException => e.printStackTrace(); System.exit(-1)
+    }
   }
 
   def addDerated(frames: Seq[CallSite], value: Long)
