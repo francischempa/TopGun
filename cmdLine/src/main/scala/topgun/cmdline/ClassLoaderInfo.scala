@@ -12,7 +12,12 @@ class ClassLoaderInfo() {
   var allClasses = new mutable.HashMap[String, ClassInfo]()
 
   def lookup(className: String, classLoader: ClassLoader): ClassInfo = {
-    allClasses.getOrElseUpdate(className, buildClassInfo(className, classLoader)): ClassInfo
+    if(className.contains("$$")){
+      val splitIndex = className.indexOf("$$")
+      val lambdaClassName = className.substring(0,splitIndex)
+      allClasses.getOrElseUpdate(lambdaClassName, buildClassInfo(lambdaClassName, classLoader)): ClassInfo
+    }else
+      allClasses.getOrElseUpdate(className, buildClassInfo(className, classLoader)): ClassInfo
   }
 
   def buildClassInfo(className: String, classLoader: ClassLoader): ClassInfo = {
