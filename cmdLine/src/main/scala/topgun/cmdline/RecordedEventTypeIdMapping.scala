@@ -7,8 +7,4 @@ object RecordedEventTypeIdMapping {
   val AllocationOutsideTlab = 332
   val MethodProfilingSample = 352
   val MethodProfilingSampleNative = 353
-  val RecordingSetting = 2999
-  val OSInformation = 337
-  val InitialSystemProperty = 338
-
 }

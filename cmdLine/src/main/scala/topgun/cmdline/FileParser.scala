@@ -60,14 +60,14 @@ class FileParser(file: File, cmdLine: JfrParseCommandLine, totals: Totals, confi
       val recordingFile = new RecordingFile(file.toPath)
       while(recordingFile.hasMoreEvents && notDoneFetchingInfo()){
         val event = recordingFile.readEvent()
-        event.getEventType.getId match {
+        event.getEventType.getLabel match {
 
-          case RecordedEventTypeIdMapping.InitialSystemProperty if classPath.isEmpty => if(event.getValue("key").toString.contains("java.class.path"))
+          case RecordedEventLabelMapping.InitialSystemProperty if classPath.isEmpty => if(event.getValue("key").toString.contains("java.class.path"))
             classPath = event.getValue("value").toString
 
-          case RecordedEventTypeIdMapping.RecordingSetting => extractJfrSettings(event)
+          case RecordedEventLabelMapping.RecordingSetting => extractJfrSettings(event)
 
-          case RecordedEventTypeIdMapping.OSInformation if isWindow.isEmpty =>
+          case RecordedEventLabelMapping.OSInformation if isWindow.isEmpty =>
             isWindow = Some(event.getValue("osVersion").toString.toLowerCase.contains("win"))
 
           case _ =>
@@ -88,10 +88,10 @@ class FileParser(file: File, cmdLine: JfrParseCommandLine, totals: Totals, confi
     while (recordingFile.hasMoreEvents){
       val event = recordingFile.readEvent()
       event.getEventType.getLabel match {
-        case "Allocation in new TLAB" => allocation(event, isTLAB = true, classPath)
-        case "Allocation outside TLAB" => allocation(event, isTLAB = false, classPath)
-        case "Method Profiling Sample" => cpu(event, classPath)
-        case "Method Profiling Sample Native" => cpuNative(event, classPath)
+        case RecordedEventLabelMapping.AllocationInNewTLAB => allocation(event, isTLAB = true, classPath)
+        case RecordedEventLabelMapping.AllocationOutsideTlab => allocation(event, isTLAB = false, classPath)
+        case RecordedEventLabelMapping.MethodProfilingSample => cpu(event, classPath)
+        case RecordedEventLabelMapping.MethodProfilingSampleNative => cpuNative(event, classPath)
         case e =>
           totals.ignoreEvent(e)
       }
@@ -192,7 +192,6 @@ class FileParser(file: File, cmdLine: JfrParseCommandLine, totals: Totals, confi
     val thread = event.getThread
     if ((thread ne null) && !includeThread(thread.getJavaName)) {
       totals.ignoredThreadCpuEventsNative.incrementAndGet
-
     } else {
       val distinctFrames: List[CallSite] = readFrames(event, classPath)
       if (!includeStack(distinctFrames)) {
@@ -228,9 +227,11 @@ class FileParser(file: File, cmdLine: JfrParseCommandLine, totals: Totals, confi
           val method = frame.getMethod
           if(method ne null) {
             val splitIndex = method.getType.getName.lastIndexOf(".")
+            val packageName = method.getType.getName.substring(0, splitIndex).intern()
+            val className = method.getType.getName.substring(splitIndex + 1).intern()
             CallSite(
-              method.getType.getName.substring(0,splitIndex).intern(),
-              method.getType.getName.substring(splitIndex+1).intern(),
+              if (splitIndex != -1) packageName else "",
+              if (splitIndex != -1) className else method.getType.getName.intern(),
               method.getName.intern(),
               method.getDescriptor.intern(),
               frame.getLineNumber,
