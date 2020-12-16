@@ -4,7 +4,7 @@ package topgun.cmdline
 import java.io.IOException
 
 import org.objectweb.asm.ClassReader
-import org.objectweb.asm.tree.ClassNode
+import org.objectweb.asm.tree.{ClassNode, LabelNode}
 
 import scala.collection.mutable
 
@@ -23,7 +23,7 @@ class ClassLoaderInfo() {
     }
     val reader = new ClassReader(iStream)
     val classNode = new ClassNode()
-    // specify no parsing options.
+    // specify no parsing options //
     reader.accept(classNode, 0)
     iStream.close()
     val classNameFromReader = reader.getClassName

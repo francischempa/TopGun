@@ -43,6 +43,7 @@ object FileWriter {
     val data: List[(String, (CallSite => Any))] = {
       List(
         ("packageName", (site: CallSite) => site.packageName),
+        ("sourceFile", (site: CallSite) => site.fileName),
         ("className", (site: CallSite) => site.className),
         ("methodName", (site: CallSite) => site.methodName),
         ("desc", (site: CallSite) => site.desc),
@@ -83,6 +84,7 @@ object FileWriter {
   val classAllocationFields: List[(String, (CallSite, String, ClassAllocations) => Any)] = {
     List(
       ("packageName", (site: CallSite, className: String, allocations: ClassAllocations) => site.packageName),
+      ("sourceFile", (site: CallSite, className: String, allocations: ClassAllocations) => site.fileName),
       ("className", (site: CallSite, className: String, allocations: ClassAllocations) => site.className),
       ("methodName", (site: CallSite, className: String, allocations: ClassAllocations) => site.methodName),
       ("desc", (site: CallSite, className: String, allocations: ClassAllocations) => site.desc),
